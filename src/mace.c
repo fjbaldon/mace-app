@@ -27,7 +27,7 @@ void set_margin(void); // adds a margin above and left of text
 int ask_password(void); // invokes get_str() and verify_str_pass()
 int ask_go_back(void); // asks the user if they want to back
 int ask_menu_opt(void); // invokes get_int() and verify_int_choice()
-void align_str(char* str); 
+void align_str(char* str); // uniforms error messages 
 
 /* int, float, & string input/parsers */
 int get_int(void);
@@ -41,23 +41,21 @@ int verify_str_pass(const char* ADMIN_PASS, char* pass);
 /* menu and sub_menu displayers */
 void print_menu(void);
 void print_exit_dialog(void);
-
 void print_sea_bullet_menu(void);
 /**/ void print_manila(void);
 /**/ void print_calc_cebu(void);
 /**/ void print_calc_siargao(void);
-
 void print_atm_transac_menu(void);
 /**/ void print_calc_atm_dposit(float* blance, float* dposits);
 /**/ void print_calc_atm_wdraw(float* blance, float* wdraws);
 /**/ void print_calc_atm_blance(float* blance, float* dposits, float* wdraws);
-
 void print_other_apps_menu(void);
 /**/ void print_students_grade_menu(void);
 /**/ /**/ void print_calc_elisa(void);
 /**/ /**/ void print_calc_noel(void);
 /**/ void print_converter(void);
 
+/* logic for the menus */
 int start_menu(void);
 int start_sea_bullet(void);
 int start_atm_transac(void);
