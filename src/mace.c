@@ -99,8 +99,9 @@ void align_str(char* str) {
 
 void start_prog(void) {
 	clear_con();
-	ask_password();
-	start_menu();
+	if (ask_password()) {
+		start_menu();
+	}
 	return;
 }
 
