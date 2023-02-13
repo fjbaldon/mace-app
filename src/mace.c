@@ -9,10 +9,6 @@
 
 #define MAX_BUF_LENGTH 1024 
 #define DEF_CHOICE 0
-#define CHOICE_ONE 1
-#define CHOICE_TWO 2
-#define CHOICE_THREE 3
-#define CHOICE_FOUR 4
 #define BACK -1
 #define EXIT 0 
 
@@ -22,12 +18,12 @@ void start_prog(void); // starts the program
 void clear_con(void); // clears the console
 void print_loading_anim(void); // adds a 3 sec delay
 void set_margin(void); // adds a margin above and left of text
+void align_err_str(char* str); // uniforms error messages 
 
 /* main prompts */
-int ask_password(void); // invokes get_str() and verify_str_pass()
-int ask_go_back(void); // asks the user if they want to back
-int ask_menu_opt(void); // invokes get_int() and verify_int_choice()
-void align_str(char* str); // uniforms error messages 
+int authenticate(void); // gets and verifies the password
+int ask_go_back(void); // returns EXIT or BACK
+int ask_menu_opt(void); // returns a integer choice
 
 /* int, float, & string input/parsers */
 int get_int(void);
@@ -91,7 +87,7 @@ void set_margin(void) {
 	return;
 }
 
-void align_str(char* str) {
+void align_err_str(char* str) {
 	puts("");
 	printf("\t%s\n", str);
 	printf("\t>> ");
@@ -99,27 +95,30 @@ void align_str(char* str) {
 
 void start_prog(void) {
 	clear_con();
-	if (ask_password()) {
-		start_menu();
+	while (!authenticate()) {
+		if (authenticate()) {
+			break;
+		}
+	}
+	if (start_menu() == EXIT) {
+		print_exit_dialog();
+		return;
 	}
 	return;
 }
 
-int ask_password(void) {
+int authenticate(void) {
 	const char ADMIN_PASS[] = "1234"; 
 	char pass[MAX_BUF_LENGTH] = "";
 	int is_ok = 0;
 
 	set_margin();
-	while (1) {
-		fputs("Enter password: ", stdout);
-		get_string(pass, sizeof(pass));
-		if (verify_str_pass(ADMIN_PASS, pass)) {
-			return 1;
-		} else {
-			printf("\tWrong password!");
-			set_margin();
-		}
+	fputs("Enter password: ", stdout);
+	get_string(pass, sizeof(pass));
+	if (verify_str_pass(ADMIN_PASS, pass)) {
+		return 1;
+	} else {
+		printf("\tWrong password!");
 	}
 	return is_ok;
 }
@@ -130,11 +129,11 @@ int get_int(void) {
 
 	while (1) {
 		if (fgets(buf, MAX_BUF_LENGTH, stdin) == NULL) {
-			align_str("Invalid input. Please enter an integer.");
+			align_err_str("Invalid input. Please enter an integer.");
 			continue;
 		}
 		if (buf[strlen(buf) - 1] != '\n') {
-			align_str("Input too long. Please try again.");
+			align_err_str("Input too long. Please try again.");
 			while ((c = getchar()) != '\n' && c != EOF);
 			continue;
 		}
@@ -142,7 +141,7 @@ int get_int(void) {
 		if (sscanf(buf, "%d", &value) == 1) {
 			break;
 		} else {
-			align_str("Error reading input. Please try again.");
+			align_err_str("Error reading input. Please try again.");
 		}
 	}
 	return value;
@@ -155,11 +154,11 @@ float get_float(void) {
 
 	while (1) {
 		if (fgets(buf, MAX_BUF_LENGTH-1, stdin) == NULL) {
-			align_str("Invalid input. Please enter a float.");
+			align_err_str("Invalid input. Please enter a float.");
 			continue;
 		}
 		if (buf[strlen(buf) - 1] != '\n') {
-			align_str("Input too long. Please try again.");
+			align_err_str("Input too long. Please try again.");
 			while ((c = getchar()) != '\n' && c != EOF);
 			continue;
 		}
@@ -167,7 +166,7 @@ float get_float(void) {
 		if (sscanf(buf, "%f", &value) == 1) {
 			return value;
 		} else {
-			align_str("Error reading input. Please try again.");
+			align_err_str("Error reading input. Please try again.");
 		}
 	}
 	return value;
@@ -179,11 +178,11 @@ void get_string(char* string, size_t size) {
 
 	while (1) {
 		if (fgets(buf, size, stdin) == NULL) {
-			align_str("Invalid input. Please enter a string.");
+			align_err_str("Invalid input. Please enter a string.");
 			continue;
 		}
 		if (buf[strlen(buf) - 1] != '\n') {
-			align_str("Input too long. Please try again.");
+			align_err_str("Input too long. Please try again.");
 			while ((c = getchar()) != '\n' && c != EOF);
 			continue;
 		}
@@ -191,7 +190,7 @@ void get_string(char* string, size_t size) {
 		if (sscanf(buf, "%[^\n]", string) == 1) {
 			return;
 		} else {
-			align_str("Error reading input. Please try again.");
+			align_err_str("Error reading input. Please try again.");
 		}
 	}
 	return;
@@ -245,12 +244,12 @@ int start_menu(void) {
 				val_return = start_other_apps();
 			break;
 			case 4:
-				print_exit_dialog();
 				return EXIT;
 			break;
+			default:
+			continue;
 		}
 		if (val_return == EXIT) {
-			print_exit_dialog();
 			return EXIT;
 		}
 	}
@@ -412,6 +411,8 @@ int start_atm_transac(void) {
 			case 4:
 				return EXIT;
 			break;
+			default: 
+			continue;
 		}
 		if (val_return == EXIT) {
 			return EXIT;
@@ -499,6 +500,10 @@ int start_other_apps(void) {
 		clear_con();
 		print_other_apps_menu();
 		choice = ask_menu_opt();
+		while (choice == 4) {
+			printf("\n\tInvalid choice.\n\t>> ");
+			choice = ask_menu_opt();
+		}
 		switch (choice) {
 			case 1:
 				clear_con();
@@ -513,6 +518,8 @@ int start_other_apps(void) {
 				clear_con();
 				return BACK;
 			break;
+			default:
+			continue;
 		}
 		if (val_return == EXIT) {
 			return EXIT;
@@ -540,6 +547,10 @@ int start_students_grade(void) {
 		clear_con();
 		print_students_grade_menu();
 		choice = ask_menu_opt();
+		while (choice == 4) {
+			printf("\n\tInvalid choice.\n\t>> ");
+			choice = ask_menu_opt();
+		}
 		switch (choice) {
 			case 1:
 				clear_con();
@@ -555,6 +566,8 @@ int start_students_grade(void) {
 				clear_con();
 				return BACK;
 			break;
+			default: 
+			continue;
 		}
 		if (val_return == EXIT) {
 			return EXIT;
@@ -643,14 +656,14 @@ int ask_go_back(void) {
 }
 
 int ask_menu_opt(void) {
-	int choice = 0;
+	int choice = DEF_CHOICE;
 
 	while (1) {
 		choice = get_int();
 		if (verify_int_choice(choice)) {
-			break;
+			return choice;
 		} else {
-			puts("Invalid choice.");
+			align_err_str("Invalid choice.");
 		} 	
 	}
 	return choice;
