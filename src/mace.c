@@ -640,8 +640,8 @@ int ask_go_back(void) {
 	char str[MAX_BUF_LENGTH];
 	int result = EXIT;
 
-	set_margin();
 	while (1) {
+		set_margin();
 		fputs("BACK [y] | EXIT [n]: ", stdout);
 		get_string(str, sizeof(str));
 		if (!(strcmp(str, "yes") && strcmp(str, "y"))) {
@@ -649,7 +649,7 @@ int ask_go_back(void) {
 		} else if (!(strcmp(str, "no") && strcmp(str, "n"))) {
 			return EXIT;
 		} else {
-			puts("\tInvalid choice.");
+			printf("\tInvalid choice.");
 		}
 	}
 	return result;
